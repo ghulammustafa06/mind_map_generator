@@ -37,3 +37,42 @@ body {
     background-color: #57254a;
 }
 
+#toolbar input[type="color"] {
+    vertical-align: middle;
+    margin: 0 5px;
+}
+
+#mind-map {
+    width: 800px;
+    height: 600px;
+    background-color: white;
+    border: 1px solid #ccc;
+    position: relative;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.node {
+    position: absolute;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: move;
+    font-weight: 300;
+    min-width: 100px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.3s;
+}
+
+.node:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.line {
+    position: absolute;
+    background-color: #333;
+    height: 2px;
+    transform-origin: 0 50%;
+}
