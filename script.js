@@ -188,6 +188,53 @@ function updateZoom() {
     updateMiniMap();
 }
 
+function updateNodeShape(node, shape) {
+    node.className = `node ${shape}`;
+    if (shape === 'diamond') {
+        node.firstChild.style.transform = 'rotate(-45deg)';
+    } else {
+        node.firstChild.style.transform = '';
+    }
+}
+
+function applyTextStyle(style) {
+    const selectedNodes = document.querySelectorAll('.node.selected');
+    selectedNodes.forEach(node => {
+        const textSpan = node.firstChild;
+        switch (style) {
+            case 'bold':
+                textSpan.style.fontWeight = textSpan.style.fontWeight === 'bold' ? 'normal' : 'bold';
+                break;
+            case 'italic':
+                textSpan.style.fontStyle = textSpan.style.fontStyle === 'italic' ? 'normal' : 'italic';
+                break;
+            case 'underline':
+                textSpan.style.textDecoration = textSpan.style.textDecoration === 'underline' ? 'none' : 'underline';
+                break;
+        }
+    });
+}
+
+function updateMiniMap() {
+    const mapRect = mindMapContainer.getBoundingClientRect();
+    const scale = Math.min(miniMap.clientWidth / mapRect.width, miniMap.clientHeight / mapRect.height);
+    
+    miniMap.innerHTML = '';
+    const nodes = document.querySelectorAll('.node');
+    nodes.forEach(node => {
+        const nodeRect = node.getBoundingClientRect();
+        const miniNode = document.createElement('div');
+        miniNode.style.position = 'absolute';
+        miniNode.style.left = `${(nodeRect.left - mapRect.left) * scale}px`;
+        miniNode.style.top = `${(nodeRect.top - mapRect.top) * scale}px`;
+        miniNode.style.width = `${nodeRect.width * scale}px`;
+        miniNode.style.height = `${nodeRect.height * scale}px`;
+        miniNode.style.backgroundColor = node.style.backgroundColor;
+        miniNode.style.borderRadius = '50%';
+        miniMap.appendChild(miniNode);
+    });
+}
+
 function saveMap() {
     const nodes = Array.from(document.querySelectorAll('.node')).map(node => ({
         id: node.id,
@@ -251,6 +298,16 @@ function loadMap() {
     }
 }
 
+function pulsateCentralNode() {
+    const centralNode = document.querySelector('.node');
+    setInterval(() => {
+        centralNode.style.transition = 'all 0.5s ease';
+        centralNode.style.transform = 'scale(1.05)';
+        setTimeout(() => {
+            centralNode.style.transform = 'scale(1)';
+        }, 500);
+    }, 3000);
+}
 
 mindMapContainer.addEventListener('dblclick', (e) => {
     if (e.target === mindMap) {
@@ -270,21 +327,18 @@ connectNodesBtn.addEventListener('click', () => {
     selectedNodes = [];
     document.querySelectorAll('.node.selected').forEach(node => node.classList.remove('selected'));
 });
-
 nodeColorPicker.addEventListener('change', () => {
     const selectedNodes = document.querySelectorAll('.node.selected');
     selectedNodes.forEach(node => {
         node.style.background = `linear-gradient(135deg, ${nodeColorPicker.value}, ${getLighterColor(nodeColorPicker.value)})`;
     });
 });
-
 lineColorPicker.addEventListener('change', () => {
     const lines = document.querySelectorAll('.line');
     lines.forEach(line => {
         line.style.backgroundColor = lineColorPicker.value;
     });
 });
-
 saveMapBtn.addEventListener('click', saveMap);
 loadMapBtn.addEventListener('click', loadMap);
 zoomSlider.addEventListener('input', updateZoom);
@@ -294,7 +348,6 @@ nodeShapeSelect.addEventListener('change', () => {
         updateNodeShape(node, nodeShapeSelect.value);
     });
 });
-
 textBoldBtn.addEventListener('click', () => applyTextStyle('bold'));
 textItalicBtn.addEventListener('click', () => applyTextStyle('italic'));
 textUnderlineBtn.addEventListener('click', () => applyTextStyle('underline'));
