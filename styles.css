@@ -1,4 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Montserrat:wght@700&display=swap');
+
+:root {
+    --primary-color: #6C63FF;
+    --secondary-color: #fac517;
+    --background-color: #f0f0f0;
+    --toolbar-bg: rgba(255, 255, 255, 0.8);
+}
 
 body {
     font-family: 'Poppins', sans-serif;
@@ -9,42 +17,80 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #f0f0f0;
+    background: linear-gradient(45deg, #FF9A8B, #FF6A88, #FF99AC);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 #toolbar {
     margin-bottom: 20px;
-    padding: 10px;
-    background-color: #fff;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    background-color: var(--toolbar-bg);
+    border-radius: 15px;
+    margin-top: 33px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
 }
 
 #toolbar button {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    padding: 8px 15px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    padding: 10px 20px;
     margin: 0 5px;
     border: none;
-    border-radius: 3px;
-    background-color: #4CAF50;
+    border-radius: 25px;
+    background-color: var(--primary-color);
     color: white;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 #toolbar button:hover {
-    background-color: #45a049;
+    background-color: #5A52D5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 #toolbar input[type="color"] {
     vertical-align: middle;
-    margin: 0 5px;
+    margin: 0 10px;
+    border: none;
+    border-radius: 50%;
+
+    cursor: pointer;
 }
 
 #toolbar input[type="range"] {
     vertical-align: middle;
-    margin: 0 5px;
+    margin: 0 10px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100px;
+    height: 5px;
+    background: #d3d3d3;
+    border-radius: 5px;
+}
+
+#toolbar input[type="range"]:hover {
+    opacity: 1;
+}
+
+#toolbar input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    cursor: pointer;
+    border-radius: 50%;
 }
 
 #mind-map-container {
