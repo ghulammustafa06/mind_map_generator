@@ -95,8 +95,9 @@ body {
 }
 
 #mind-map-container {
-    width: 800px;
-    height: 600px;
+    width: 80vw;
+    height: 70vh;
+    margin: 20px auto;
     overflow: hidden;
     border: none;
     position: relative;
@@ -135,6 +136,23 @@ body {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
+.node.ellipse {
+    border-radius: 50%;
+    aspect-ratio: 2 / 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.node.diamond {
+    transform: rotate(45deg);
+}
+
+.node.diamond span {
+    display: inline-block;
+    transform: rotate(-45deg);
+}
+
 .line {
     position: absolute;
     background-color: rgba(255, 255, 255, 0.6);
@@ -146,3 +164,35 @@ body {
 .node.selected {
     box-shadow: 0 0 0 3px #FFC107, 0 8px 25px rgba(0, 0, 0, 0.2);
 }
+
+#mini-map {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    height: 150px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    color: white;
+}
+
+footer h2 {
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    font-size: 24px;
+}
+
+footer p {
+    margin: 5px 0 0;
+    font-size: 14px;
+}
+

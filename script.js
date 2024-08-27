@@ -8,6 +8,11 @@ const lineColorPicker = document.getElementById('line-color');
 const saveMapBtn = document.getElementById('save-map');
 const loadMapBtn = document.getElementById('load-map');
 const zoomSlider = document.getElementById('zoom');
+const nodeShapeSelect = document.getElementById('node-shape');
+const textBoldBtn = document.getElementById('text-bold');
+const textItalicBtn = document.getElementById('text-italic');
+const textUnderlineBtn = document.getElementById('text-underline');
+const miniMap = document.getElementById('mini-map');
 
 let nodeId = 0;
 let selectedNodes = [];
@@ -256,6 +261,25 @@ mindMapContainer.addEventListener('dblclick', (e) => {
 });
 
 
+function updateMiniMap() {
+    const mapRect = mindMapContainer.getBoundingClientRect();
+    const scale = Math.min(miniMap.clientWidth / mapRect.width, miniMap.clientHeight / mapRect.height);
+    
+    miniMap.innerHTML = '';
+    const nodes = document.querySelectorAll('.node');
+    nodes.forEach(node => {
+        const nodeRect = node.getBoundingClientRect();
+        const miniNode = document.createElement('div');
+        miniNode.style.position = 'absolute';
+        miniNode.style.left = `${(nodeRect.left - mapRect.left) * scale}px`;
+        miniNode.style.top = `${(nodeRect.top - mapRect.top) * scale}px`;
+        miniNode.style.width = `${nodeRect.width * scale}px`;
+        miniNode.style.height = `${nodeRect.height * scale}px`;
+        miniNode.style.backgroundColor = node.style.backgroundColor;
+        miniNode.style.borderRadius = '50%';
+        miniMap.appendChild(miniNode);
+    });
+}
 
 addNodeBtn.addEventListener('click', addNode);
 deleteNodeBtn.addEventListener('click', deleteNode);
