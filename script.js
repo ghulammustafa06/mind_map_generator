@@ -116,6 +116,16 @@ function deleteNode() {
     });
 }
 
+function connectNodes(node1, node2) {
+    const line = document.createElement('div');
+    line.className = 'line';
+    line.dataset.from = node1.id;
+    line.dataset.to = node2.id;
+    line.style.backgroundColor = lineColorPicker.value;
+    mindMap.appendChild(line);
+    updateLine(line, node1, node2);
+}
+
 function changeNodeColor() {
     const selectedNodes = document.querySelectorAll('.node.selected');
     selectedNodes.forEach(node => {
@@ -127,6 +137,71 @@ function changeLineColor() {
     const lines = document.querySelectorAll('.line');
     lines.forEach(line => {
         line.style.backgroundColor = lineColorPicker.value;
+    });
+}
+
+function saveMap() {
+    const nodes = Array.from(document.querySelectorAll('.node')).map(node => ({
+        id: node.id,
+        x: node.style.left,
+        y: node.style.top,
+        text: node.textContent,
+        color: node.style.backgroundColor
+    }));
+    
+    const lines = Array.from(document.querySelectorAll('.line')).map(line => ({
+        from: line.dataset.from,
+        to: line.dataset.to,
+        color: line.style.backgroundColor
+    }));
+    
+    const mapData = { nodes, lines };
+    localStorage.setItem('mindMap', JSON.stringify(mapData));
+    alert('Mind map saved!');
+}
+
+function loadMap() {
+    const mapData = JSON.parse(localStorage.getItem('mindMap'));
+    if (mapData) {
+        mindMap.innerHTML = '';
+        nodeId = 0;
+        
+        mapData.nodes.forEach(nodeData => {
+            const node = createNode(
+                parseFloat(nodeData.x),
+                parseFloat(nodeData.y),
+                nodeData.text,
+                nodeData.color
+            );
+            node.id = nodeData.id;
+        });
+        
+        mapData.lines.forEach(lineData => {
+            const fromNode = document.getElementById(lineData.from);
+            const toNode = document.getElementById(lineData.to);
+            const line = document.createElement('div');
+            line.className = 'line';
+            line.dataset.from = lineData.from;
+            line.dataset.to = lineData.to;
+            line.style.backgroundColor = lineData.color;
+            mindMap.appendChild(line);
+            updateLine(line, fromNode, toNode);
+        });
+        
+        alert('Mind map loaded!');
+    } else {
+        alert('No saved mind map found!');
+    }
+}
+
+function updateZoom() {
+    const zoom = zoomSlider.value;
+    mindMap.style.transform = `scale(${zoom})`;
+    const lines = document.querySelectorAll('.line');
+    lines.forEach(line => {
+        const fromNode = document.getElementById(line.dataset.from);
+        const toNode = document.getElementById(line.dataset.to);
+        updateLine(line, fromNode, toNode);
     });
 }
 
