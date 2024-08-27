@@ -1,3 +1,7 @@
+let nodeId = 0;
+let selectedNodes = [];
+let isConnecting = false;
+
 const mindMap = document.getElementById('mind-map');
 const mindMapContainer = document.getElementById('mind-map-container');
 const addNodeBtn = document.getElementById('add-node');
@@ -14,10 +18,6 @@ const textItalicBtn = document.getElementById('text-italic');
 const textUnderlineBtn = document.getElementById('text-underline');
 const miniMap = document.getElementById('mini-map');
 
-let nodeId = 0;
-let selectedNodes = [];
-let isConnecting = false;
-
 function createNode(x, y, text = 'New Node', color = getRandomColor(), shape = 'rectangle') {
     const node = document.createElement('div');
     node.className = `node ${shape}`;
@@ -30,50 +30,43 @@ function createNode(x, y, text = 'New Node', color = getRandomColor(), shape = '
     textSpan.textContent = text;
     node.appendChild(textSpan);
     
-    node.draggable = true;
-    
-    node.addEventListener('dragstart', dragStart);
-    node.addEventListener('dragend', dragEnd);
-    node.addEventListener('click', selectNode);
-    node.addEventListener('dblclick', editNodeText);
-    
     mindMap.appendChild(node);
     animateNodeCreation(node);
+    makeNodeDraggable(node);
     updateMiniMap();
     return node;
 }
 
 function animateNodeCreation(node) {
-    node.style.opacity = '0';
-    node.style.transform = 'scale(0.5)';
-    setTimeout(() => {
-        node.style.transition = 'all 0.3s ease';
-        node.style.opacity = '1';
-        node.style.transform = 'scale(1)';
-    }, 50);
+    gsap.from(node, {
+        duration: 0.5,
+        scale: 0,
+        opacity: 0,
+        ease: "back.out(1.7)"
+    });
+}
+
+function makeNodeDraggable(node) {
+    Draggable.create(node, {
+        bounds: mindMapContainer,
+        onDrag: function() {
+            updateLines(this.target);
+        },
+        onDragEnd: function() {
+            updateMiniMap();
+        }
+    });
+
+    node.addEventListener('dblclick', editNodeText);
 }
 
 function getRandomColor() {
-    const hue = Math.floor(Math.random() * 360);
-    return `hsl(${hue}, 70%, 50%)`;
+    return `hsl(${Math.random() * 360}, 70%, 50%)`;
 }
 
 function getLighterColor(color) {
     const hsl = color.match(/\d+/g).map(Number);
     return `hsl(${hsl[0]}, ${hsl[1]}%, ${Math.min(hsl[2] + 15, 100)}%)`;
-}
-
-function dragStart(e) {
-    e.dataTransfer.setData('text/plain', e.target.id);
-}
-
-function dragEnd(e) {
-    const rect = mindMapContainer.getBoundingClientRect();
-    const zoom = parseFloat(zoomSlider.value);
-    e.target.style.left = `${(e.clientX - rect.left) / zoom}px`;
-    e.target.style.top = `${(e.clientY - rect.top) / zoom}px`;
-    updateLines(e.target);
-    updateMiniMap();
 }
 
 function updateLines(node) {
@@ -98,53 +91,58 @@ function updateLine(line, fromNode, toNode) {
     const angle = Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI;
     const length = Math.sqrt((toX - fromX) ** 2 + (toY - fromY) ** 2);
     
-    line.style.width = `${length}px`;
-    line.style.left = `${fromX}px`;
-    line.style.top = `${fromY}px`;
-    line.style.transform = `rotate(${angle}deg)`;
-    
-    line.style.opacity = '0';
-    line.style.transition = 'none';
-    setTimeout(() => {
-        line.style.transition = 'all 0.3s ease';
-        line.style.opacity = '1';
-    }, 50);
+    gsap.to(line, {
+        width: length,
+        left: fromX,
+        top: fromY,
+        rotation: angle,
+        duration: 0.3,
+        ease: "power2.out"
+    });
 }
 
 function selectNode(e) {
     const node = e.target.closest('.node');
-    if (isConnecting) {
-        selectedNodes.push(node);
-        node.classList.add('selected');
-        if (selectedNodes.length === 2) {
-            connectNodes(selectedNodes[0], selectedNodes[1]);
-            selectedNodes.forEach(n => n.classList.remove('selected'));
-            selectedNodes = [];
-            isConnecting = false;
-            connectNodesBtn.textContent = 'Connect Nodes';
-        }
-    } else {
-        if (node.classList.contains('selected')) {
-            node.classList.remove('selected');
-        } else {
+    if (node) {
+        if (isConnecting) {
+            selectedNodes.push(node);
             node.classList.add('selected');
+            if (selectedNodes.length === 2) {
+                connectNodes(selectedNodes[0], selectedNodes[1]);
+                selectedNodes.forEach(n => n.classList.remove('selected'));
+                selectedNodes = [];
+                isConnecting = false;
+                connectNodesBtn.textContent = 'Connect Nodes';
+            }
+        } else {
+            node.classList.toggle('selected');
         }
     }
+}
+
+function connectNodes(node1, node2) {
+    const line = document.createElement('div');
+    line.className = 'line';
+    line.dataset.from = node1.id;
+    line.dataset.to = node2.id;
+    line.style.backgroundColor = lineColorPicker.value;
+    mindMap.appendChild(line);
+    updateLine(line, node1, node2);
+    
+    gsap.from(line, {
+        opacity: 0,
+        duration: 0.5,
+        ease: "power2.out"
+    });
 }
 
 function editNodeText(e) {
     const node = e.target.closest('.node');
     const textSpan = node.firstChild;
-    const text = prompt('Enter new text:', textSpan.textContent);
-    if (text !== null) {
-        textSpan.textContent = text;
+    const newText = prompt('Enter new text:', textSpan.textContent);
+    if (newText !== null) {
+        textSpan.textContent = newText;
     }
-}
-
-function addNode() {
-    const x = Math.random() * (mindMapContainer.clientWidth - 100);
-    const y = Math.random() * (mindMapContainer.clientHeight - 50);
-    createNode(x, y);
 }
 
 function deleteNode() {
