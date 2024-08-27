@@ -36,22 +36,6 @@ function dragStart(e) {
     e.dataTransfer.setData('text/plain', e.target.id);
 }
 
-
-function dragEnd(e) {
-    e.target.style.left = `${e.clientX - mindMap.offsetLeft}px`;
-    e.target.style.top = `${e.clientY - mindMap.offsetTop}px`;
-    updateLines(e.target);
-}
-
-function updateLines(node) {
-    const lines = document.querySelectorAll(`.line[data-from="${node.id}"], .line[data-to="${node.id}"]`);
-    lines.forEach(line => {
-        const fromNode = document.getElementById(line.dataset.from);
-        const toNode = document.getElementById(line.dataset.to);
-        updateLine(line, fromNode, toNode);
-    });
-}
-
 function dragEnd(e) {
     const rect = mindMapContainer.getBoundingClientRect();
     const zoom = parseFloat(zoomSlider.value);
@@ -68,6 +52,7 @@ function updateLines(node) {
         updateLine(line, fromNode, toNode);
     });
 }
+
 function updateLine(line, fromNode, toNode) {
     const fromRect = fromNode.getBoundingClientRect();
     const toRect = toNode.getBoundingClientRect();
@@ -87,6 +72,27 @@ function updateLine(line, fromNode, toNode) {
     line.style.transform = `rotate(${angle}deg)`;
 }
 
+function selectNode(e) {
+    const node = e.target;
+    if (isConnecting) {
+        selectedNodes.push(node);
+        node.classList.add('selected');
+        if (selectedNodes.length === 2) {
+            connectNodes(selectedNodes[0], selectedNodes[1]);
+            selectedNodes.forEach(n => n.classList.remove('selected'));
+            selectedNodes = [];
+            isConnecting = false;
+            connectNodesBtn.textContent = 'Connect Nodes';
+        }
+    } else {
+        if (node.classList.contains('selected')) {
+            node.classList.remove('selected');
+        } else {
+            node.classList.add('selected');
+        }
+    }
+}
+
 function editNodeText(e) {
     const node = e.target;
     const text = prompt('Enter new text:', node.textContent);
@@ -96,24 +102,25 @@ function editNodeText(e) {
 }
 
 function addNode() {
-    const x = Math.random() * (mindMap.clientWidth - 100);
-    const y = Math.random() * (mindMap.clientHeight - 50);
+    const x = Math.random() * (mindMapContainer.clientWidth - 100);
+    const y = Math.random() * (mindMapContainer.clientHeight - 50);
     createNode(x, y);
 }
 
 function deleteNode() {
-    if (selectedNode) {
-        const lines = document.querySelectorAll(`.line[data-from="${selectedNode.id}"], .line[data-to="${selectedNode.id}"]`);
+    const selectedNodes = document.querySelectorAll('.node.selected');
+    selectedNodes.forEach(node => {
+        const lines = document.querySelectorAll(`.line[data-from="${node.id}"], .line[data-to="${node.id}"]`);
         lines.forEach(line => line.remove());
-        selectedNode.remove();
-        selectedNode = null;
-    }
+        node.remove();
+    });
 }
 
 function changeNodeColor() {
-    if (selectedNode) {
-        selectedNode.style.backgroundColor = nodeColorPicker.value;
-    }
+    const selectedNodes = document.querySelectorAll('.node.selected');
+    selectedNodes.forEach(node => {
+        node.style.backgroundColor = nodeColorPicker.value;
+    });
 }
 
 function changeLineColor() {
@@ -123,15 +130,29 @@ function changeLineColor() {
     });
 }
 
-mindMap.addEventListener('dblclick', (e) => {
+mindMapContainer.addEventListener('dblclick', (e) => {
     if (e.target === mindMap) {
-        createNode(e.clientX - mindMap.offsetLeft, e.clientY - mindMap.offsetTop);
+        const rect = mindMapContainer.getBoundingClientRect();
+        const zoom = parseFloat(zoomSlider.value);
+        const x = (e.clientX - rect.left) / zoom;
+        const y = (e.clientY - rect.top) / zoom;
+        createNode(x, y);
     }
 });
 
 addNodeBtn.addEventListener('click', addNode);
 deleteNodeBtn.addEventListener('click', deleteNode);
+connectNodesBtn.addEventListener('click', () => {
+    isConnecting = !isConnecting;
+    connectNodesBtn.textContent = isConnecting ? 'Cancel Connection' : 'Connect Nodes';
+    selectedNodes = [];
+    document.querySelectorAll('.node.selected').forEach(node => node.classList.remove('selected'));
+});
+
 nodeColorPicker.addEventListener('change', changeNodeColor);
 lineColorPicker.addEventListener('change', changeLineColor);
+saveMapBtn.addEventListener('click', saveMap);
+loadMapBtn.addEventListener('click', loadMap);
+zoomSlider.addEventListener('input', updateZoom);
 
 createNode(400, 300);
