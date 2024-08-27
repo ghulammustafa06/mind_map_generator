@@ -13,13 +13,13 @@ let nodeId = 0;
 let selectedNodes = [];
 let isConnecting = false;
 
-function createNode(x, y, text = 'New Node', color = '#4CAF50') {
+function createNode(x, y, text = 'New Node', color = getRandomColor()) {
     const node = document.createElement('div');
     node.className = 'node';
     node.id = `node-${nodeId++}`;
     node.style.left = `${x}px`;
     node.style.top = `${y}px`;
-    node.style.backgroundColor = color;
+    node.style.background = `linear-gradient(135deg, ${color}, ${getLighterColor(color)})`;
     node.textContent = text;
     node.draggable = true;
     
@@ -29,8 +29,30 @@ function createNode(x, y, text = 'New Node', color = '#4CAF50') {
     node.addEventListener('dblclick', editNodeText);
     
     mindMap.appendChild(node);
+    animateNodeCreation(node);
     return node;
 }
+
+function getRandomColor() {
+    const hue = Math.floor(Math.random() * 360);
+    return `hsl(${hue}, 70%, 50%)`;
+}
+
+function getLighterColor(color) {
+    const hsl = color.match(/\d+/g).map(Number);
+    return `hsl(${hsl[0]}, ${hsl[1]}%, ${Math.min(hsl[2] + 15, 100)}%)`;
+}
+
+function animateNodeCreation(node) {
+    node.style.opacity = '0';
+    node.style.transform = 'scale(0.5)';
+    setTimeout(() => {
+        node.style.transition = 'all 0.3s ease';
+        node.style.opacity = '1';
+        node.style.transform = 'scale(1)';
+    }, 50);
+}
+
 
 function dragStart(e) {
     e.dataTransfer.setData('text/plain', e.target.id);
@@ -44,14 +66,6 @@ function dragEnd(e) {
     updateLines(e.target);
 }
 
-function updateLines(node) {
-    const lines = document.querySelectorAll(`.line[data-from="${node.id}"], .line[data-to="${node.id}"]`);
-    lines.forEach(line => {
-        const fromNode = document.getElementById(line.dataset.from);
-        const toNode = document.getElementById(line.dataset.to);
-        updateLine(line, fromNode, toNode);
-    });
-}
 
 function updateLine(line, fromNode, toNode) {
     const fromRect = fromNode.getBoundingClientRect();
@@ -70,7 +84,15 @@ function updateLine(line, fromNode, toNode) {
     line.style.left = `${fromX}px`;
     line.style.top = `${fromY}px`;
     line.style.transform = `rotate(${angle}deg)`;
+
+    line.style.opacity = '0';
+    line.style.transition = 'none';
+    setTimeout(() => {
+        line.style.transition = 'all 0.3s ease';
+        line.style.opacity = '1';
+    }, 50);
 }
+
 
 function selectNode(e) {
     const node = e.target;
@@ -124,7 +146,16 @@ function connectNodes(node1, node2) {
     line.style.backgroundColor = lineColorPicker.value;
     mindMap.appendChild(line);
     updateLine(line, node1, node2);
+    
+    [node1, node2].forEach(node => {
+        node.style.transition = 'all 0.3s ease';
+        node.style.transform = 'scale(1.1)';
+        setTimeout(() => {
+            node.style.transform = 'scale(1)';
+        }, 300);
+    });
 }
+
 
 function changeNodeColor() {
     const selectedNodes = document.querySelectorAll('.node.selected');
