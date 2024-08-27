@@ -33,6 +33,7 @@ function createNode(x, y, text = 'New Node', color = getRandomColor()) {
     return node;
 }
 
+
 function getRandomColor() {
     const hue = Math.floor(Math.random() * 360);
     return `hsl(${hue}, 70%, 50%)`;
@@ -66,6 +67,14 @@ function dragEnd(e) {
     updateLines(e.target);
 }
 
+function updateLines(node) {
+    const lines = document.querySelectorAll(`.line[data-from="${node.id}"], .line[data-to="${node.id}"]`);
+    lines.forEach(line => {
+        const fromNode = document.getElementById(line.dataset.from);
+        const toNode = document.getElementById(line.dataset.to);
+        updateLine(line, fromNode, toNode);
+    });
+}
 
 function updateLine(line, fromNode, toNode) {
     const fromRect = fromNode.getBoundingClientRect();
@@ -92,7 +101,6 @@ function updateLine(line, fromNode, toNode) {
         line.style.opacity = '1';
     }, 50);
 }
-
 
 function selectNode(e) {
     const node = e.target;
@@ -227,6 +235,7 @@ function loadMap() {
 
 function updateZoom() {
     const zoom = zoomSlider.value;
+    mindMap.style.transition = 'transform 0.3s ease';
     mindMap.style.transform = `scale(${zoom})`;
     const lines = document.querySelectorAll('.line');
     lines.forEach(line => {
@@ -246,6 +255,8 @@ mindMapContainer.addEventListener('dblclick', (e) => {
     }
 });
 
+
+
 addNodeBtn.addEventListener('click', addNode);
 deleteNodeBtn.addEventListener('click', deleteNode);
 connectNodesBtn.addEventListener('click', () => {
@@ -255,10 +266,24 @@ connectNodesBtn.addEventListener('click', () => {
     document.querySelectorAll('.node.selected').forEach(node => node.classList.remove('selected'));
 });
 
+function pulsateCentralNode() {
+    const centralNode = document.querySelector('.node');
+    setInterval(() => {
+        centralNode.style.transition = 'all 0.5s ease';
+        centralNode.style.transform = 'scale(1.05)';
+        setTimeout(() => {
+            centralNode.style.transform = 'scale(1)';
+        }, 500);
+    }, 3000);
+}
+
 nodeColorPicker.addEventListener('change', changeNodeColor);
 lineColorPicker.addEventListener('change', changeLineColor);
 saveMapBtn.addEventListener('click', saveMap);
 loadMapBtn.addEventListener('click', loadMap);
 zoomSlider.addEventListener('input', updateZoom);
 
-createNode(400, 300);
+
+
+createNode(400, 300, 'Central Idea');
+pulsateCentralNode();

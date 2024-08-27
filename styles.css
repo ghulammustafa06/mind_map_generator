@@ -13,8 +13,7 @@ body {
     padding: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    justify-content: space-between;
     min-height: 100vh;
     background: linear-gradient(45deg, #FF9A8B, #FF6A88, #FF99AC);
     background-size: 400% 400%;
@@ -28,20 +27,21 @@ body {
 }
 
 #toolbar {
-    margin-bottom: 20px;
     padding: 15px;
     background-color: var(--toolbar-bg);
-    border-radius: 15px;
-    margin-top: 33px;
+    border-radius: 0 0 15px 15px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-#toolbar button {
+#toolbar button, #toolbar select {
     font-family: 'Montserrat', sans-serif;
     font-weight: 700;
-    padding: 10px 20px;
-    margin: 0 5px;
+    padding: 10px 15px;
     border: none;
     border-radius: 25px;
     background-color: var(--primary-color);
@@ -52,7 +52,7 @@ body {
     letter-spacing: 1px;
 }
 
-#toolbar button:hover {
+#toolbar button:hover, #toolbar select:hover {
     background-color: #5A52D5;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -60,7 +60,6 @@ body {
 
 #toolbar input[type="color"] {
     vertical-align: middle;
-    margin: 0 10px;
     border: none;
     border-radius: 50%;
     width: 30px;
@@ -70,7 +69,6 @@ body {
 
 #toolbar input[type="range"] {
     vertical-align: middle;
-    margin: 0 10px;
     -webkit-appearance: none;
     appearance: none;
     width: 100px;

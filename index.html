@@ -5,21 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindScape</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
+
 <body>
     <div id="toolbar">
-        <button id="add-node">Add Node</button>
-        <button id="delete-node">Delete Node</button>
-        <button id="connect-nodes">Connect Nodes</button>
+        <button id="add-node"><i class="fas fa-plus"></i> Add Node</button>
+        <button id="delete-node"><i class="fas fa-trash"></i> Delete</button>
+        <button id="connect-nodes"><i class="fas fa-link"></i> Connect</button>
         <input type="color" id="node-color" value="#4CAF50">
         <input type="color" id="line-color" value="#333333">
-        <button id="save-map">Save</button>
-        <button id="load-map">Load</button>
+        <select id="node-shape">
+            <option value="rectangle">Rectangle</option>
+            <option value="ellipse">Ellipse</option>
+            <option value="diamond">Diamond</option>
+        </select>
+        <button id="text-bold"><i class="fas fa-bold"></i></button>
+        <button id="text-italic"><i class="fas fa-italic"></i></button>
+        <button id="text-underline"><i class="fas fa-underline"></i></button>
+        <button id="save-map"><i class="fas fa-save"></i> Save</button>
+        <button id="load-map"><i class="fas fa-folder-open"></i> Load</button>
         <input type="range" id="zoom" min="0.5" max="2" step="0.1" value="1">
     </div>
     <div id="mind-map-container">
         <div id="mind-map"></div>
     </div>
+    <div id="mini-map"></div>
+
+    <footer>
+        <h2>MindScape</h2>
+        <p>Create beautiful mind maps with ease</p>
+    </footer>
+    
     <script src="script.js"></script>
 </body>
 </html>
