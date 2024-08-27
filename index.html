@@ -10,10 +10,16 @@
     <div id="toolbar">
         <button id="add-node">Add Node</button>
         <button id="delete-node">Delete Node</button>
+        <button id="connect-nodes">Connect Nodes</button>
         <input type="color" id="node-color" value="#4CAF50">
         <input type="color" id="line-color" value="#333333">
+        <button id="save-map">Save</button>
+        <button id="load-map">Load</button>
+        <input type="range" id="zoom" min="0.5" max="2" step="0.1" value="1">
     </div>
-    <div id="mind-map"></div>
+    <div id="mind-map-container">
+        <div id="mind-map"></div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
