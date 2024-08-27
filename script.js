@@ -18,14 +18,18 @@ let nodeId = 0;
 let selectedNodes = [];
 let isConnecting = false;
 
-function createNode(x, y, text = 'New Node', color = getRandomColor()) {
+function createNode(x, y, text = 'New Node', color = getRandomColor(), shape = 'rectangle') {
     const node = document.createElement('div');
-    node.className = 'node';
+    node.className = `node ${shape}`;
     node.id = `node-${nodeId++}`;
     node.style.left = `${x}px`;
     node.style.top = `${y}px`;
     node.style.background = `linear-gradient(135deg, ${color}, ${getLighterColor(color)})`;
-    node.textContent = text;
+    
+    const textSpan = document.createElement('span');
+    textSpan.textContent = text;
+    node.appendChild(textSpan);
+    
     node.draggable = true;
     
     node.addEventListener('dragstart', dragStart);
@@ -35,18 +39,8 @@ function createNode(x, y, text = 'New Node', color = getRandomColor()) {
     
     mindMap.appendChild(node);
     animateNodeCreation(node);
+    updateMiniMap();
     return node;
-}
-
-
-function getRandomColor() {
-    const hue = Math.floor(Math.random() * 360);
-    return `hsl(${hue}, 70%, 50%)`;
-}
-
-function getLighterColor(color) {
-    const hsl = color.match(/\d+/g).map(Number);
-    return `hsl(${hsl[0]}, ${hsl[1]}%, ${Math.min(hsl[2] + 15, 100)}%)`;
 }
 
 function animateNodeCreation(node) {
@@ -59,6 +53,15 @@ function animateNodeCreation(node) {
     }, 50);
 }
 
+function getRandomColor() {
+    const hue = Math.floor(Math.random() * 360);
+    return `hsl(${hue}, 70%, 50%)`;
+}
+
+function getLighterColor(color) {
+    const hsl = color.match(/\d+/g).map(Number);
+    return `hsl(${hsl[0]}, ${hsl[1]}%, ${Math.min(hsl[2] + 15, 100)}%)`;
+}
 
 function dragStart(e) {
     e.dataTransfer.setData('text/plain', e.target.id);
@@ -70,6 +73,7 @@ function dragEnd(e) {
     e.target.style.left = `${(e.clientX - rect.left) / zoom}px`;
     e.target.style.top = `${(e.clientY - rect.top) / zoom}px`;
     updateLines(e.target);
+    updateMiniMap();
 }
 
 function updateLines(node) {
@@ -98,7 +102,7 @@ function updateLine(line, fromNode, toNode) {
     line.style.left = `${fromX}px`;
     line.style.top = `${fromY}px`;
     line.style.transform = `rotate(${angle}deg)`;
-
+    
     line.style.opacity = '0';
     line.style.transition = 'none';
     setTimeout(() => {
@@ -108,7 +112,7 @@ function updateLine(line, fromNode, toNode) {
 }
 
 function selectNode(e) {
-    const node = e.target;
+    const node = e.target.closest('.node');
     if (isConnecting) {
         selectedNodes.push(node);
         node.classList.add('selected');
@@ -129,10 +133,11 @@ function selectNode(e) {
 }
 
 function editNodeText(e) {
-    const node = e.target;
-    const text = prompt('Enter new text:', node.textContent);
+    const node = e.target.closest('.node');
+    const textSpan = node.firstChild;
+    const text = prompt('Enter new text:', textSpan.textContent);
     if (text !== null) {
-        node.textContent = text;
+        textSpan.textContent = text;
     }
 }
 
@@ -149,6 +154,7 @@ function deleteNode() {
         lines.forEach(line => line.remove());
         node.remove();
     });
+    updateMiniMap();
 }
 
 function connectNodes(node1, node2) {
@@ -169,19 +175,17 @@ function connectNodes(node1, node2) {
     });
 }
 
-
-function changeNodeColor() {
-    const selectedNodes = document.querySelectorAll('.node.selected');
-    selectedNodes.forEach(node => {
-        node.style.backgroundColor = nodeColorPicker.value;
-    });
-}
-
-function changeLineColor() {
+function updateZoom() {
+    const zoom = zoomSlider.value;
+    mindMap.style.transition = 'transform 0.3s ease';
+    mindMap.style.transform = `scale(${zoom})`;
     const lines = document.querySelectorAll('.line');
     lines.forEach(line => {
-        line.style.backgroundColor = lineColorPicker.value;
+        const fromNode = document.getElementById(line.dataset.from);
+        const toNode = document.getElementById(line.dataset.to);
+        updateLine(line, fromNode, toNode);
     });
+    updateMiniMap();
 }
 
 function saveMap() {
@@ -189,8 +193,12 @@ function saveMap() {
         id: node.id,
         x: node.style.left,
         y: node.style.top,
-        text: node.textContent,
-        color: node.style.backgroundColor
+        text: node.firstChild.textContent,
+        color: node.style.background,
+        shape: node.className.split(' ')[1],
+        fontWeight: node.firstChild.style.fontWeight,
+        fontStyle: node.firstChild.style.fontStyle,
+        textDecoration: node.firstChild.style.textDecoration
     }));
     
     const lines = Array.from(document.querySelectorAll('.line')).map(line => ({
@@ -215,9 +223,13 @@ function loadMap() {
                 parseFloat(nodeData.x),
                 parseFloat(nodeData.y),
                 nodeData.text,
-                nodeData.color
+                nodeData.color.split(',')[1].trim(),
+                nodeData.shape
             );
             node.id = nodeData.id;
+            node.firstChild.style.fontWeight = nodeData.fontWeight;
+            node.firstChild.style.fontStyle = nodeData.fontStyle;
+            node.firstChild.style.textDecoration = nodeData.textDecoration;
         });
         
         mapData.lines.forEach(lineData => {
@@ -232,23 +244,13 @@ function loadMap() {
             updateLine(line, fromNode, toNode);
         });
         
+        updateMiniMap();
         alert('Mind map loaded!');
     } else {
         alert('No saved mind map found!');
     }
 }
 
-function updateZoom() {
-    const zoom = zoomSlider.value;
-    mindMap.style.transition = 'transform 0.3s ease';
-    mindMap.style.transform = `scale(${zoom})`;
-    const lines = document.querySelectorAll('.line');
-    lines.forEach(line => {
-        const fromNode = document.getElementById(line.dataset.from);
-        const toNode = document.getElementById(line.dataset.to);
-        updateLine(line, fromNode, toNode);
-    });
-}
 
 mindMapContainer.addEventListener('dblclick', (e) => {
     if (e.target === mindMap) {
@@ -260,27 +262,6 @@ mindMapContainer.addEventListener('dblclick', (e) => {
     }
 });
 
-
-function updateMiniMap() {
-    const mapRect = mindMapContainer.getBoundingClientRect();
-    const scale = Math.min(miniMap.clientWidth / mapRect.width, miniMap.clientHeight / mapRect.height);
-    
-    miniMap.innerHTML = '';
-    const nodes = document.querySelectorAll('.node');
-    nodes.forEach(node => {
-        const nodeRect = node.getBoundingClientRect();
-        const miniNode = document.createElement('div');
-        miniNode.style.position = 'absolute';
-        miniNode.style.left = `${(nodeRect.left - mapRect.left) * scale}px`;
-        miniNode.style.top = `${(nodeRect.top - mapRect.top) * scale}px`;
-        miniNode.style.width = `${nodeRect.width * scale}px`;
-        miniNode.style.height = `${nodeRect.height * scale}px`;
-        miniNode.style.backgroundColor = node.style.backgroundColor;
-        miniNode.style.borderRadius = '50%';
-        miniMap.appendChild(miniNode);
-    });
-}
-
 addNodeBtn.addEventListener('click', addNode);
 deleteNodeBtn.addEventListener('click', deleteNode);
 connectNodesBtn.addEventListener('click', () => {
@@ -290,24 +271,34 @@ connectNodesBtn.addEventListener('click', () => {
     document.querySelectorAll('.node.selected').forEach(node => node.classList.remove('selected'));
 });
 
-function pulsateCentralNode() {
-    const centralNode = document.querySelector('.node');
-    setInterval(() => {
-        centralNode.style.transition = 'all 0.5s ease';
-        centralNode.style.transform = 'scale(1.05)';
-        setTimeout(() => {
-            centralNode.style.transform = 'scale(1)';
-        }, 500);
-    }, 3000);
-}
+nodeColorPicker.addEventListener('change', () => {
+    const selectedNodes = document.querySelectorAll('.node.selected');
+    selectedNodes.forEach(node => {
+        node.style.background = `linear-gradient(135deg, ${nodeColorPicker.value}, ${getLighterColor(nodeColorPicker.value)})`;
+    });
+});
 
-nodeColorPicker.addEventListener('change', changeNodeColor);
-lineColorPicker.addEventListener('change', changeLineColor);
+lineColorPicker.addEventListener('change', () => {
+    const lines = document.querySelectorAll('.line');
+    lines.forEach(line => {
+        line.style.backgroundColor = lineColorPicker.value;
+    });
+});
+
 saveMapBtn.addEventListener('click', saveMap);
 loadMapBtn.addEventListener('click', loadMap);
 zoomSlider.addEventListener('input', updateZoom);
+nodeShapeSelect.addEventListener('change', () => {
+    const selectedNodes = document.querySelectorAll('.node.selected');
+    selectedNodes.forEach(node => {
+        updateNodeShape(node, nodeShapeSelect.value);
+    });
+});
 
-
+textBoldBtn.addEventListener('click', () => applyTextStyle('bold'));
+textItalicBtn.addEventListener('click', () => applyTextStyle('italic'));
+textUnderlineBtn.addEventListener('click', () => applyTextStyle('underline'));
 
 createNode(400, 300, 'Central Idea');
 pulsateCentralNode();
+updateMiniMap();
