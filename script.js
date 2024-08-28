@@ -145,15 +145,33 @@ function editNodeText(e) {
     }
 }
 
-function deleteNode() {
+function deleteSelectedNodes() {
     const selectedNodes = document.querySelectorAll('.node.selected');
     selectedNodes.forEach(node => {
         const lines = document.querySelectorAll(`.line[data-from="${node.id}"], .line[data-to="${node.id}"]`);
         lines.forEach(line => line.remove());
-        node.remove();
+        gsap.to(node, {
+            scale: 0,
+            opacity: 0,
+            duration: 0.3,
+            ease: "power2.in",
+            onComplete: () => {
+                node.remove();
+                updateMiniMap();
+            }
+        });
     });
-    updateMiniMap();
 }
+
+function updateNodeColor() {
+    const selectedNodes = document.querySelectorAll('.node.selected');
+    selectedNodes.forEach(node => {
+        const color = nodeColorPicker.value;
+        node.style.background = `linear-gradient(135deg, ${color}, ${getLighterColor(color)})`;
+    });
+}
+
+
 
 function connectNodes(node1, node2) {
     const line = document.createElement('div');
