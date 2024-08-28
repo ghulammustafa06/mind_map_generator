@@ -273,3 +273,122 @@ footer p {
         margin: 10px 0;
     }
 }
+
+@media (max-width: 480px) {
+    #mini-map {
+        width: 100px;
+        height: 70px;
+    }
+
+    #toolbar button, #toolbar select {
+        font-size: 8px;
+    }
+
+    #toolbar button, #toolbar select {
+        padding: 6px 10px;
+    }
+
+    .node {
+        padding: 8px;
+        min-width: 100px;
+    }
+
+    .tooltip::after {
+        font-size: 8px;
+    }
+
+    .line {
+        height: 1px;
+    }
+
+    #toolbar {
+        margin-left: 0;
+        width: 90%;
+    }
+
+    #mind-map-container {
+        margin: 8px 0;
+    }
+
+    #mini-map {
+        bottom: 8px;
+        right: 8px;
+    }
+
+    #toolbar button, #toolbar select {
+        font-size: 7px;
+    }
+
+    #toolbar button, #toolbar select {
+        padding: 8px 10px;
+    }
+
+    .node {
+        padding: 8px;
+        min-width: 100px;
+    }
+
+    .tooltip::after {
+        font-size: 7px;
+    }
+
+    .line {
+        height: 1.5px;
+    }   
+
+    #toolbar {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    #mind-map-container {
+        margin: 8px 0;
+    }
+
+    #toolbar button, #toolbar select {
+        font-size: 10px;
+    }
+
+    #toolbar button, #toolbar select {
+        padding: 5px 9px;
+    }
+
+    .node {
+        padding: 7px;
+        min-width: 100px;
+    }
+
+    .tooltip::after {
+        font-size: 7px;
+    }
+
+    .footer h2 {
+        font-size: 9px;
+    }
+
+    .footer p {
+        font-size: 5px;
+    }
+
+    #mini-map {
+        bottom: 8px;
+        right: 10px;
+    }
+
+    #toolbar button, #toolbar select {
+        font-size: 10px;
+    }
+
+    #toolbar button, #toolbar select {
+        padding: 7px 8px;
+    }
+
+    .node {
+        padding: 8px;
+        min-width: 100px;
+    }
+
+    .tooltip::after {
+        font-size: 7px;
+    }
+}

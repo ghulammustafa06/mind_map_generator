@@ -3,38 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindScape</title>
+    <title>MindScape - Interactive Mind Mapping</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <div id="toolbar">
-        <button id="add-node"><i class="fas fa-plus"></i> Add Node</button>
-        <button id="delete-node"><i class="fas fa-trash"></i> Delete</button>
-        <button id="connect-nodes"><i class="fas fa-link"></i> Connect</button>
-        <input type="color" id="node-color" value="#4CAF50">
-        <input type="color" id="line-color" value="#333333">
-        <select id="node-shape">
+    <header class="animate__animated animate__fadeIn"></header>
+    <div id="toolbar" class="animate__animated animate__slideInDown">
+        <button id="add-node" class="tooltip" data-tooltip="Add Node"><i class="fas fa-plus"></i></button>
+        <button id="delete-node" class="tooltip" data-tooltip="Delete Node"><i class="fas fa-trash"></i></button>
+        <button id="connect-nodes" class="tooltip" data-tooltip="Connect Nodes"><i class="fas fa-link"></i></button>
+        <input type="color" id="node-color" value="#6C63FF" class="tooltip" data-tooltip="Node Color">
+        <input type="color" id="line-color" value="#333333" class="tooltip" data-tooltip="Line Color">
+        <select id="node-shape" class="tooltip" data-tooltip="Node Shape">
             <option value="rectangle">Rectangle</option>
             <option value="ellipse">Ellipse</option>
             <option value="diamond">Diamond</option>
         </select>
-        <button id="text-bold"><i class="fas fa-bold"></i></button>
-        <button id="text-italic"><i class="fas fa-italic"></i></button>
-        <button id="text-underline"><i class="fas fa-underline"></i></button>
-        <button id="save-map"><i class="fas fa-save"></i> Save</button>
-        <button id="load-map"><i class="fas fa-folder-open"></i> Load</button>
-        <input type="range" id="zoom" min="0.5" max="2" step="0.1" value="1">
+
+        <select id="line-style" class="tooltip" data-tooltip="Line Style">
+            <option value="solid">Solid</option>
+            <option value="dashed">Dashed</option>
+            <option value="dotted">Dotted</option>
+            <option value="zigzag">Zigzag</option>
+        </select>
+
+        <button id="text-bold" class="tooltip" data-tooltip="Bold"><i class="fas fa-bold"></i></button>
+        <button id="text-italic" class="tooltip" data-tooltip="Italic"><i class="fas fa-italic"></i></button>
+        <button id="text-underline" class="tooltip" data-tooltip="Underline"><i class="fas fa-underline"></i></button>
+        <button id="save-map" class="tooltip" data-tooltip="Save Map"><i class="fas fa-save"></i></button>
+        <button id="load-map" class="tooltip" data-tooltip="Load Map"><i class="fas fa-folder-open"></i></button>
+        <input type="range" id="zoom" min="0.5" max="2" step="0.1" value="1" class="tooltip" data-tooltip="Zoom">
     </div>
-    <div id="mind-map-container">
+
+    <div id="mind-map-container" class="animate__animated animate__zoomIn">
         <div id="mind-map"></div>
     </div>
-    <div id="mini-map"></div>     
-
-
+    
     <div id="mini-map"></div>
+   
     <footer class="animate__animated animate__fadeIn">
         <h2>MindScape</h2>
         <p>Create beautiful mind maps with ease</p>
