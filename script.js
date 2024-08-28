@@ -1,6 +1,7 @@
 let nodeId = 0;
 let selectedNodes = [];
 let isConnecting = false;
+let currentLineStyle = 'solid';
 
 const mindMap = document.getElementById('mind-map');
 const mindMapContainer = document.getElementById('mind-map-container');
@@ -17,6 +18,9 @@ const textBoldBtn = document.getElementById('text-bold');
 const textItalicBtn = document.getElementById('text-italic');
 const textUnderlineBtn = document.getElementById('text-underline');
 const miniMap = document.getElementById('mini-map');
+const lineStyleSelect = document.getElementById('line-style');
+
+
 
 function createNode(x, y, text = 'New Node', color = getRandomColor(), shape = 'rectangle') {
     const node = document.createElement('div');
@@ -78,28 +82,40 @@ function updateLines(node) {
     });
 }
 
+function updateLines(node) {
+    const lines = document.querySelectorAll(`.line[data-from="${node.id}"], .line[data-to="${node.id}"]`);
+    lines.forEach(line => {
+        const fromNode = document.getElementById(line.dataset.from);
+        const toNode = document.getElementById(line.dataset.to);
+        updateLine(line, fromNode, toNode);
+    });
+}
+
 function updateLine(line, fromNode, toNode) {
     const fromRect = fromNode.getBoundingClientRect();
     const toRect = toNode.getBoundingClientRect();
     const mapRect = mindMapContainer.getBoundingClientRect();
     
-    const fromX = (fromRect.left + fromRect.width / 2 - mapRect.left) / mindMap.style.transform.match(/scale\((.*?)\)/)[1];
-    const fromY = (fromRect.top + fromRect.height / 2 - mapRect.top) / mindMap.style.transform.match(/scale\((.*?)\)/)[1];
-    const toX = (toRect.left + toRect.width / 2 - mapRect.left) / mindMap.style.transform.match(/scale\((.*?)\)/)[1];
-    const toY = (toRect.top + toRect.height / 2 - mapRect.top) / mindMap.style.transform.match(/scale\((.*?)\)/)[1];
+    const fromX = fromRect.left + fromRect.width / 2 - mapRect.left;
+    const fromY = fromRect.top + fromRect.height / 2 - mapRect.top;
+    const toX = toRect.left + toRect.width / 2 - mapRect.left;
+    const toY = toRect.top + toRect.height / 2 - mapRect.top;
     
     const angle = Math.atan2(toY - fromY, toX - fromX) * 180 / Math.PI;
     const length = Math.sqrt((toX - fromX) ** 2 + (toY - fromY) ** 2);
     
-    gsap.to(line, {
-        width: length,
-        left: fromX,
-        top: fromY,
-        rotation: angle,
-        duration: 0.3,
-        ease: "power2.out"
-    });
+    line.style.width = `${length}px`;
+    line.style.left = `${fromX}px`;
+    line.style.top = `${fromY}px`;
+    line.style.transform = `rotate(${angle}deg)`;
+
+    const arrow = line.querySelector('.arrow');
+    if (arrow) {
+        arrow.style.right = '0';
+        arrow.style.transform = 'rotate(180deg)';
+    }
 }
+
 
 function selectNode(e) {
     const node = e.target.closest('.node');
@@ -171,46 +187,18 @@ function updateNodeColor() {
     });
 }
 
-
-
-function connectNodes(node1, node2) {
-    const line = document.createElement('div');
-    line.className = 'line';
-    line.dataset.from = node1.id;
-    line.dataset.to = node2.id;
-    line.style.backgroundColor = lineColorPicker.value;
-    mindMap.appendChild(line);
-    updateLine(line, node1, node2);
-    
-    [node1, node2].forEach(node => {
-        node.style.transition = 'all 0.3s ease';
-        node.style.transform = 'scale(1.1)';
-        setTimeout(() => {
-            node.style.transform = 'scale(1)';
-        }, 300);
-    });
-}
-
-function updateZoom() {
-    const zoom = zoomSlider.value;
-    mindMap.style.transition = 'transform 0.3s ease';
-    mindMap.style.transform = `scale(${zoom})`;
+function updateLineColor() {
     const lines = document.querySelectorAll('.line');
     lines.forEach(line => {
-        const fromNode = document.getElementById(line.dataset.from);
-        const toNode = document.getElementById(line.dataset.to);
-        updateLine(line, fromNode, toNode);
+        line.style.backgroundColor = lineColorPicker.value;
     });
-    updateMiniMap();
 }
 
-function updateNodeShape(node, shape) {
-    node.className = `node ${shape}`;
-    if (shape === 'diamond') {
-        node.firstChild.style.transform = 'rotate(-45deg)';
-    } else {
-        node.firstChild.style.transform = '';
-    }
+function updateNodeShape() {
+    const selectedNodes = document.querySelectorAll('.node.selected');
+    selectedNodes.forEach(node => {
+        node.className = `node ${nodeShapeSelect.value}`;
+    });
 }
 
 function applyTextStyle(style) {
@@ -228,6 +216,24 @@ function applyTextStyle(style) {
                 textSpan.style.textDecoration = textSpan.style.textDecoration === 'underline' ? 'none' : 'underline';
                 break;
         }
+    });
+}
+
+function updateZoom() {
+    const zoom = zoomSlider.value;
+    gsap.to(mindMap, {
+        scale: zoom,
+        duration: 0.3,
+        ease: "power2.out",
+        onUpdate: () => {
+            const lines = document.querySelectorAll('.line');
+            lines.forEach(line => {
+                const fromNode = document.getElementById(line.dataset.from);
+                const toNode = document.getElementById(line.dataset.to);
+                updateLine(line, fromNode, toNode);
+            });
+        },
+        onComplete: updateMiniMap
     });
 }
 
@@ -298,13 +304,7 @@ function loadMap() {
         mapData.lines.forEach(lineData => {
             const fromNode = document.getElementById(lineData.from);
             const toNode = document.getElementById(lineData.to);
-            const line = document.createElement('div');
-            line.className = 'line';
-            line.dataset.from = lineData.from;
-            line.dataset.to = lineData.to;
-            line.style.backgroundColor = lineData.color;
-            mindMap.appendChild(line);
-            updateLine(line, fromNode, toNode);
+            connectNodes(fromNode, toNode);
         });
         
         updateMiniMap();
@@ -314,60 +314,29 @@ function loadMap() {
     }
 }
 
-function pulsateCentralNode() {
-    const centralNode = document.querySelector('.node');
-    setInterval(() => {
-        centralNode.style.transition = 'all 0.5s ease';
-        centralNode.style.transform = 'scale(1.05)';
-        setTimeout(() => {
-            centralNode.style.transform = 'scale(1)';
-        }, 500);
-    }, 3000);
-}
-
-mindMapContainer.addEventListener('dblclick', (e) => {
-    if (e.target === mindMap) {
-        const rect = mindMapContainer.getBoundingClientRect();
-        const zoom = parseFloat(zoomSlider.value);
-        const x = (e.clientX - rect.left) / zoom;
-        const y = (e.clientY - rect.top) / zoom;
-        createNode(x, y);
-    }
+mindMapContainer.addEventListener('click', selectNode);
+addNodeBtn.addEventListener('click', () => {
+    const x = Math.random() * (mindMapContainer.clientWidth - 100);
+    const y = Math.random() * (mindMapContainer.clientHeight - 50);
+    createNode(x, y);
 });
 
-addNodeBtn.addEventListener('click', addNode);
-deleteNodeBtn.addEventListener('click', deleteNode);
+deleteNodeBtn.addEventListener('click', deleteSelectedNodes);
 connectNodesBtn.addEventListener('click', () => {
     isConnecting = !isConnecting;
     connectNodesBtn.textContent = isConnecting ? 'Cancel Connection' : 'Connect Nodes';
     selectedNodes = [];
     document.querySelectorAll('.node.selected').forEach(node => node.classList.remove('selected'));
 });
-nodeColorPicker.addEventListener('change', () => {
-    const selectedNodes = document.querySelectorAll('.node.selected');
-    selectedNodes.forEach(node => {
-        node.style.background = `linear-gradient(135deg, ${nodeColorPicker.value}, ${getLighterColor(nodeColorPicker.value)})`;
-    });
-});
-lineColorPicker.addEventListener('change', () => {
-    const lines = document.querySelectorAll('.line');
-    lines.forEach(line => {
-        line.style.backgroundColor = lineColorPicker.value;
-    });
-});
-saveMapBtn.addEventListener('click', saveMap);
-loadMapBtn.addEventListener('click', loadMap);
-zoomSlider.addEventListener('input', updateZoom);
-nodeShapeSelect.addEventListener('change', () => {
-    const selectedNodes = document.querySelectorAll('.node.selected');
-    selectedNodes.forEach(node => {
-        updateNodeShape(node, nodeShapeSelect.value);
-    });
-});
+nodeColorPicker.addEventListener('change', updateNodeColor);
+lineColorPicker.addEventListener('change', updateLineColor);
+nodeShapeSelect.addEventListener('change', updateNodeShape);
 textBoldBtn.addEventListener('click', () => applyTextStyle('bold'));
 textItalicBtn.addEventListener('click', () => applyTextStyle('italic'));
 textUnderlineBtn.addEventListener('click', () => applyTextStyle('underline'));
+zoomSlider.addEventListener('input', updateZoom);
+saveMapBtn.addEventListener('click', saveMap);
+loadMapBtn.addEventListener('click', loadMap);
 
 createNode(400, 300, 'Central Idea');
-pulsateCentralNode();
 updateMiniMap();
